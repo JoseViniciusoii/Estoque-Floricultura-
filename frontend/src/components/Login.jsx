@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import logoImage from '../assets/logo.png';
 
-// Componente interno para renderizar o ícone SVG dinamicamente
 const IconeOlho = ({ visivel }) => (
     <svg
         viewBox="0 0 24 24"
@@ -123,7 +122,7 @@ const styles = {
         display: 'flex', justifyContent: 'center', marginBottom: '5px'
     },
     logoImg: {
-        height: '120px', // Altura ajustada para não ficar gigante
+        height: '120px', // pra não ficar gigante
         width: 'auto',
         display: 'block',
         objectFit: 'contain'

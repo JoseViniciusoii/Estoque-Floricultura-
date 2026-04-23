@@ -21,7 +21,7 @@ const produtosCriticos = produtos.filter(p => {
       {/* Requisito Entrega 07: Alerta quando o nível estiver abaixo do mínimo */}
       {produtosCriticos.length > 0 ? (
         <div style={styles.bannerErro}>
-          <strong style={{ fontSize: '16px' }}>⚠️ ATENÇÃO: Stock Crítico Detetado</strong>
+          <strong style={{ fontSize: '16px' }}>⚠️ ATENÇÃO: Stock Crítico Detectado</strong>
           <ul style={styles.lista}>
             {produtosCriticos.map(p => (
               <li key={p.id} style={styles.item}>

@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* 📌 LISTAR PRODUTOS */
+/* LISTAR PRODUTOS */
 app.get('/produtos', (req, res) => {
   db.all('SELECT * FROM produtos', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -14,90 +14,70 @@ app.get('/produtos', (req, res) => {
   });
 });
 
-/* 📌 CADASTRAR PRODUTO */
+/* CADASTRAR PRODUTO */
 app.post('/produtos', (req, res) => {
-  const { nome, tipo, quantidade, quantidade_minima, data_validade, preco } = req.body;
+  const { nome, tipo, quantidade, quantidade_minima, data_validade } = req.body;
 
-  db.run(
-    `INSERT INTO produtos (nome, tipo, quantidade, quantidade_minima, data_validade, preco)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [nome, tipo, quantidade, quantidade_minima, data_validade, preco],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID });
+  // Removido o campo 'preco' que estava causando erro no SQLite
+  const sql = `INSERT INTO produtos (nome, tipo, quantidade, quantidade_minima, data_validade) VALUES (?, ?, ?, ?, ?)`;
+  const params = [nome, tipo, Number(quantidade) || 0, Number(quantidade_minima) || 0, data_validade];
+
+  db.run(sql, params, function (err) {
+    if (err) {
+      console.error("❌ ERRO NO CADASTRO:", err.message);
+      return res.status(500).json({ error: err.message });
     }
-  );
+    console.log(`✅ Produto cadastrado! ID: ${this.lastID}`);
+    res.json({ id: this.lastID });
+  });
 });
 
-/* 📌 ROTA DE MOVIMENTAÇÃO ATUALIZADA PARA O PROMPT */
+/* ROTA DE MOVIMENTAÇÃO */
 app.patch('/produtos/:id/movimentar', (req, res) => {
   const { id } = req.params;
   const { tipo, quantidadeManual } = req.body;
+  const idLimpo = id.includes(':') ? id.split(':')[0] : id;
 
-  console.log(`Log: Alterando ID ${id} | Tipo: ${tipo} | Qtd: ${quantidadeManual}`);
-
-  // Buscamos o produto para saber a quantidade atual
-  db.get('SELECT * FROM produtos WHERE id = ?', [id], (err, produto) => {
-    if (err) {
-      console.error("Erro ao buscar:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    
-    if (!produto) return res.status(404).json({ error: "Produto não encontrado" });
+  db.get('SELECT * FROM produtos WHERE id = ?', [idLimpo], (err, produto) => {
+    if (err || !produto) return res.status(404).json({ error: "Produto não encontrado" });
 
     const valor = Number(quantidadeManual) || 1;
     let novaQtd = tipo === 'entrada' 
       ? Number(produto.quantidade) + valor 
       : Math.max(0, Number(produto.quantidade) - valor);
 
-    // 🚩 ATENÇÃO: Verifique se sua coluna chama 'quantidade' ou 'estoque'
-    db.run('UPDATE produtos SET quantidade = ? WHERE id = ?', [novaQtd, id], function(err) {
-      if (err) {
-        console.error("ERRO NO UPDATE:", err.message); // Este log aparecerá no seu terminal se falhar
-        return res.status(500).json({ error: err.message });
-      }
-      console.log(`Sucesso! Nova quantidade do ID ${id}: ${novaQtd}`);
+    db.run('UPDATE produtos SET quantidade = ? WHERE id = ?', [novaQtd, idLimpo], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      console.log(`📦 Movimentação: ${tipo} | ID ${idLimpo} agora é ${novaQtd}`);
       res.json({ success: true, novaQuantidade: novaQtd });
     });
   });
 });
 
-/* ✏️ EDITAR PRODUTO COMPLETO */
+/* EDITAR PRODUTO COMPLETO */
 app.put('/produtos/:id', (req, res) => {
   let { id } = req.params;
   const { nome, tipo, quantidade, quantidade_minima, data_validade } = req.body;
+  const idLimpo = id.includes(':') ? id.split(':')[0] : id;
 
-  // Limpeza de ID para evitar erros de formato (ex: 10:1)
-  id = id.includes(':') ? id.split(':')[0] : id;
-
-  const sql = `
-    UPDATE produtos 
-    SET nome = ?, tipo = ?, quantidade = ?, quantidade_minima = ?, data_validade = ?
-    WHERE id = ?
-  `;
-
-  const params = [nome, tipo, quantidade, quantidade_minima, data_validade, id];
+  const sql = `UPDATE produtos SET nome = ?, tipo = ?, quantidade = ?, quantidade_minima = ?, data_validade = ? WHERE id = ?`;
+  const params = [nome, tipo, Number(quantidade), Number(quantidade_minima), data_validade, idLimpo];
 
   db.run(sql, params, function(err) {
-    if (err) {
-      console.error("ERRO NA EDIÇÃO:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    
-    if (this.changes === 0) {
-      return res.status(404).json({ error: "Produto não encontrado" });
-    }
-
-    console.log(`Sucesso! Produto ${id} editado.`);
+    if (err) return res.status(500).json({ error: err.message });
+    console.log(`✏️ Sucesso! Produto ${idLimpo} editado.`);
     res.json({ message: "Produto atualizado com sucesso" });
   });
 });
 
-/* ❌ EXCLUIR PRODUTO */
+/* EXCLUIR PRODUTO */
 app.delete('/produtos/:id', (req, res) => {
   const { id } = req.params;
-  db.run('DELETE FROM produtos WHERE id = ?', [id], function (err) {
+  const idLimpo = id.includes(':') ? id.split(':')[0] : id;
+
+  db.run('DELETE FROM produtos WHERE id = ?', [idLimpo], function (err) {
     if (err) return res.status(500).json({ error: err.message });
+    console.log(`🗑️ Produto ${idLimpo} removido.`);
     res.json({ message: 'Produto excluído com sucesso' });
   });
 });

@@ -2,12 +2,12 @@ import api from '../services/api';
 
 function Estoque({ produtos, carregarProdutos }) {
 
-  // Ordenação Alfabética para a Entrega 07
+  // Ordenação Alfabética
   const produtosOrdenados = Array.isArray(produtos)
     ? [...produtos].sort((a, b) => a.nome.localeCompare(b.nome))
     : [];
 
-  // --- FUNÇÕES DE AÇÃO ---
+  // FUNÇÕES DE AÇÃO 
 
   function movimentar(id, tipo) {
     const idLimpo = String(id).split(':')[0];
@@ -50,7 +50,7 @@ function editarProduto(produto) {
       tipo,
       quantidade: Number(quantidade),
       quantidade_minima: Number(minimo),
-      // 🚩 GARANTA QUE ESTÁ ENVIANDO A NOVA VALIDADE PARA O BACKEND:
+      // GARANTIR QUE ESTÁ ENVIANDO A NOVA VALIDADE PARA O BACKEND:
       data_validade: validade 
     })
     .then(() => {
@@ -58,8 +58,6 @@ function editarProduto(produto) {
     })
     .catch(() => alert('Erro ao editar'));
   }
-
-  // --- RENDERIZAÇÃO ---
 
   if (produtosOrdenados.length === 0) {
     return <p style={{ padding: '20px' }}>Carregando inventário...</p>;
@@ -102,7 +100,7 @@ function editarProduto(produto) {
                   <small>Mínimo: {estoqueMinimo}</small>
                 </div>
 
-                {/* Botões de Gestão (✏️ e 🗑) */}
+                {/* Botões de Gestão */}
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
                   <button className="btn-edit" onClick={() => editarProduto(p)} style={{ padding: '4px 8px', fontSize: '0.8rem' }}>
                     ✏️ Editar

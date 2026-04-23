@@ -44,7 +44,6 @@ function App() {
     }
   };
 
-  // 📌 Entrega 07: Atualização automática das quantidades
   const manipularMovimentacao = async (id, tipo) => {
     try {
       // Importante: id deve ser passado na URL e tipo no corpo
@@ -56,7 +55,6 @@ function App() {
     }
   };
 
-  // 📌 Entrega 06: Exclusão de registros
   const manipularDelete = async (id) => {
     if (window.confirm("Excluir este produto permanentemente?")) {
       try {
@@ -68,7 +66,6 @@ function App() {
     }
   };
 
-  // 📌 Entrega 06: Edição de registros
   const manipularEdit = async (produto) => {
     const novoNome = prompt("Editar nome do produto:", produto.nome);
     if (novoNome && novoNome !== produto.nome) {
@@ -104,9 +101,10 @@ function App() {
         </button>
       </header>
 
+      <h2>Painel de Controle</h2>
+      <br />
       <Dashboard produtos={produtos} />
 
-      {/* Entrega 05 e 07: Alerta e Identificação */}
       <AlertaEstoque produtos={produtos} usuarioLogado={usuarioLogado} />
 
       <div className="card">
@@ -117,8 +115,8 @@ function App() {
       <div className="card">
         <Estoque
           produtos={produtos}
-          carregarProdutos={carregarProdutos} // Verifique se esta prop existe aqui!
-          onMovimentacao={manipularMovimentacao} // Se você usa essa função, carregarProdutos deve estar dentro dela
+          carregarProdutos={carregarProdutos}
+          onMovimentacao={manipularMovimentacao}
           onDelete={manipularDelete}
           onEdit={manipularEdit}
         />

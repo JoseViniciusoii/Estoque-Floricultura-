@@ -10,7 +10,6 @@ const Dashboard = ({ produtos = [] }) => {
     const atual = Number(p.quantidade || 0);
     const min = Number(p.quantidade_minima || p.minimo || 0);
     // Só conta se tiver estoque baixo E se a quantidade for maior que zero 
-    // (opcional: remova 'atual > 0' se quiser contar itens zerados como críticos)
     return atual <= min;
   }).length;
 
@@ -18,13 +17,12 @@ const Dashboard = ({ produtos = [] }) => {
     const dataStr = p.data_validade || p.validade;
     if (!dataStr) return false;
 
-    // Normalização das datas para comparar apenas o "dia"
+    // Normalização das datas para comparar apenas o dia
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
     const dataValidade = new Date(dataStr);
-    // Adicionamos um ajuste manual caso a data venha como string YYYY-MM-DD
-    // para evitar problemas de fuso horário que jogam a data para o dia anterior
+    
     if (dataStr.includes('-')) {
         dataValidade.setMinutes(dataValidade.getMinutes() + dataValidade.getTimezoneOffset());
     }
@@ -33,7 +31,7 @@ const Dashboard = ({ produtos = [] }) => {
     const diffEmMs = dataValidade - hoje;
     const diffEmDias = Math.floor(diffEmMs / (1000 * 60 * 60 * 24));
 
-    // ATUALIZAÇÃO: Conta se vencer em até 3 dias OU se já estiver vencido (menor que 0)
+    //Conta se vencer em até 3 dias OU se já estiver vencido (menor que 0)
     return diffEmDias <= 3;
   }).length;
 
